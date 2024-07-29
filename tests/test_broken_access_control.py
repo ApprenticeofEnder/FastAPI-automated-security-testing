@@ -79,7 +79,7 @@ class TestBrokenAccessControl:
         )
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    # CWE-23 Relative Path Traversa
+    # CWE-23 Relative Path Traversal
     def test_cwe_23_v1(
         self, client, v1_base_endpoint, profiles, profile_alpha_filename
     ):
