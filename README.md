@@ -19,7 +19,7 @@ Why don't we try to use those to find our security bugs?
 - [Automated Security Testing Substack Series](#automated-security-testing-substack-series)
 - [About This Codebase](#about-this-codebase)
   - [V1 and V2: Insecure and Secure Versions](#v1-and-v2-insecure-and-secure-versions)
-  - [Active Examples](#active-examples)
+  - [Active Examples](#active-examples---owasp-top-10-2021)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)
