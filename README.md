@@ -49,7 +49,11 @@ In the application, there are 2 API versions: `v1`, and `v2`. `v1` hosts the vul
 
 ### Active Examples
 
+- [Broken Access Control](tests/test_broken_access_control.py)
+  - [CWE-22 Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')](https://cwe.mitre.org/data/definitions/22.html)
+  - [CWE-285 Improper Authorization](https://cwe.mitre.org/data/definitions/285.html)
 - [Serverside Request Forgery (SSRF)](tests/test_ssrf.py)
+  - [CWE-918 Server-Side Request Forgery (SSRF)](https://cwe.mitre.org/data/definitions/918.html)
 
 ## Installation
 
