@@ -1,4 +1,6 @@
-from fastapi import APIRouter, status
+import os
+
+from fastapi import APIRouter, Response, status
 from fastapi.responses import JSONResponse
 
 from app.shared.dependencies import FakeDBItem, FakeDBUser
@@ -7,9 +9,27 @@ from app.shared.models import Item
 router = APIRouter(prefix="/broken-access-control")
 
 
+# CWE-22 Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')
+@router.get("/cwe-22")
+async def cwe_22_path_traversal(profile: str, response: Response):
+    try:
+        with open(os.path.join(os.getcwd(), profile), "r") as file:
+            return {"profile": file.read()}
+    except FileNotFoundError:
+        response.status_code = 404
+        return {"error": "Profile not found."}
+
+
+# CWE-23 Relative Path Traversal
+@router.get("/cwe-23")
+async def cwe_23_path_traversal():
+    # TODO
+    pass
+
+
 # CWE-285 Improper Authorization
 @router.get("/cwe-285/items/{id}", response_model=Item)
-async def broken_access_control(
+async def cwe_285_improper_authorization(
     item: FakeDBItem,
     user: FakeDBUser,
 ):
