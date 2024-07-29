@@ -47,7 +47,7 @@ The main attractions here are the test suites, which show the different security
 
 In the application, there are 2 API versions: `v1`, and `v2`. `v1` hosts the vulnerable versions of each endpoint. `v2`, correspondingly, hosts the secure versions of each endpoint. Each endpoint is designed to highlight one particular security flaw -- a CWE, or Common Weakness Enumeration.
 
-### Active Examples
+### Active Examples - OWASP Top 10 2021
 
 - [Broken Access Control](tests/test_broken_access_control.py)
   - [CWE-22 Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')](https://cwe.mitre.org/data/definitions/22.html)
