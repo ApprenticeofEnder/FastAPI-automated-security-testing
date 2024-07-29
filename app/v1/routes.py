@@ -1,13 +1,8 @@
-import requests
 from fastapi import APIRouter
 
-from app.shared.models import SSRFPayload
+from app.v1.broken_access_control import router as broken_access_control_router
+from app.v1.ssrf import router as ssrf_router
 
 router = APIRouter(prefix="/v1")
-
-
-@router.post("/ssrf")
-async def ssrf(ssrf_data: SSRFPayload):
-    external_res = requests.get(ssrf_data.url)
-    data = external_res.json()
-    return {"data": data}
+router.include_router(broken_access_control_router)
+router.include_router(ssrf_router)

@@ -7,6 +7,16 @@ SSRF_URI = "http://192.168.177.14/api/v1/config"
 SSRF_RESPONSE = {"application": {"name": "Secret API"}}
 
 
+@pytest.fixture
+def v1_base_endpoint():
+    return "/v1/ssrf"
+
+
+@pytest.fixture
+def v2_base_endpoint():
+    return "/v2/ssrf"
+
+
 @pytest.fixture(autouse=True)
 def mock_server():
     responses.start()
@@ -24,30 +34,26 @@ def mock_server():
     responses.stop()
 
 
-@responses.activate
-def test_normal_v1(client):
-    response = client.post("/v1/ssrf", json={"url": LEGIT_URI})
-    assert response.status_code == 200
-    assert response.json()["data"] == LEGIT_RESPONSE
+class TestSSRF:
 
+    # CWE-918 Server-Side Request Forgery (SSRF)
+    @responses.activate
+    def test_cwe_918_v1(self, client, v1_base_endpoint):
+        response = client.post(f"{v1_base_endpoint}/cwe-918", json={"url": LEGIT_URI})
+        assert response.status_code == 200
+        assert response.json()["data"] == LEGIT_RESPONSE
 
-@responses.activate
-def test_normal_v2(client):
-    response = client.post("/v2/ssrf", json={"url": LEGIT_URI})
-    assert response.status_code == 200
-    assert response.json()["data"] == LEGIT_RESPONSE
+        response = client.post(f"{v1_base_endpoint}/cwe-918", json={"url": SSRF_URI})
+        assert response.status_code == 200
+        assert (
+            response.json()["data"] == SSRF_RESPONSE
+        )  # This means we got access to an internal API we definitely shouldn't have.
 
+    @responses.activate
+    def test_cwe_918_v2(self, client, v2_base_endpoint):
+        response = client.post(f"{v2_base_endpoint}/cwe-918", json={"url": LEGIT_URI})
+        assert response.status_code == 200
+        assert response.json()["data"] == LEGIT_RESPONSE
 
-@responses.activate
-def test_ssrf_v1(client):
-    response = client.post("/v1/ssrf", json={"url": SSRF_URI})
-    assert response.status_code == 200
-    assert (
-        response.json()["data"] == SSRF_RESPONSE
-    )  # This means we got access to an internal API we definitely shouldn't have.
-
-
-@responses.activate
-def test_ssrf_v2(client):
-    response = client.post("/v2/ssrf", json={"url": SSRF_URI})
-    assert response.status_code == 400  # This means the SSRF was blocked! Yay!
+        response = client.post(f"{v2_base_endpoint}/cwe-918", json={"url": SSRF_URI})
+        assert response.status_code == 400  # This means the SSRF was blocked! Yay!
