@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from fastapi import APIRouter, Response, status
 from fastapi.responses import JSONResponse
@@ -16,15 +17,27 @@ async def cwe_22_path_traversal(profile: str, response: Response):
         with open(os.path.join(os.getcwd(), profile), "r") as file:
             return {"profile": file.read()}
     except FileNotFoundError:
-        response.status_code = 404
+        response.status_code = status.HTTP_404_NOT_FOUND
         return {"error": "Profile not found."}
 
 
 # CWE-23 Relative Path Traversal
 @router.get("/cwe-23")
-async def cwe_23_path_traversal():
-    # TODO
-    pass
+async def cwe_23_path_traversal(profile: str, response: Response):
+    try:
+        # Credit for this goes to Maarten Fabré on StackOverflow:
+        # https://stackoverflow.com/questions/45188708/how-to-prevent-directory-traversal-attack-from-python-code
+        root_dir = Path(os.getcwd())
+        with open(
+            root_dir.joinpath(profile).resolve().relative_to(root_dir.resolve()), "r"
+        ) as file:
+            return {"profile": file.read()}
+    except ValueError:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {"error": "Profile not found."}
+    except FileNotFoundError:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return {"error": "Error processing request."}
 
 
 # CWE-285 Improper Authorization

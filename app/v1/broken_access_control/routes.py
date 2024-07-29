@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Response, status
 from fastapi.responses import JSONResponse
 
@@ -14,15 +16,19 @@ async def cwe_22_path_traversal(profile: str, response: Response):
         with open(profile, "r") as file:
             return {"profile": file.read()}
     except FileNotFoundError:
-        response.status_code = 404
+        response.status_code = status.HTTP_404_NOT_FOUND
         return {"error": "Profile not found."}
 
 
 # CWE-23 Relative Path Traversal
 @router.get("/cwe-23")
-async def cwe_23_path_traversal():
-    # TODO
-    pass
+async def cwe_23_path_traversal(profile: str, response: Response):
+    try:
+        with open(os.path.join(os.getcwd(), profile), "r") as file:
+            return {"profile": file.read()}
+    except FileNotFoundError:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {"error": "Profile not found."}
 
 
 # CWE-285 Improper Authorization

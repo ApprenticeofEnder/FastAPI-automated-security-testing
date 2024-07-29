@@ -1,6 +1,7 @@
 from urllib.parse import urlencode
 
 import pytest
+from fastapi import status
 from pydantic import BaseModel
 
 
@@ -51,7 +52,7 @@ class TestBrokenAccessControl:
         response = client.get(
             f"{v1_base_endpoint}/cwe-22?{urlencode(params)}",
         )
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         assert response.json()["profile"] == profiles.alpha
 
         params = {"profile": "/etc/passwd"}
@@ -59,7 +60,7 @@ class TestBrokenAccessControl:
         response = client.get(
             f"{v1_base_endpoint}/cwe-22?{urlencode(params)}",
         )
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         assert response.json()["profile"] == open("/etc/passwd").read()
 
     def test_cwe_22_v2(self, client, v2_base_endpoint, profiles, profile_beta_filename):
@@ -68,7 +69,7 @@ class TestBrokenAccessControl:
         response = client.get(
             f"{v2_base_endpoint}/cwe-22?{urlencode(params)}",
         )
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         assert response.json()["profile"] == profiles.beta
 
         params = {"profile": "/etc/passwd"}
@@ -76,7 +77,43 @@ class TestBrokenAccessControl:
         response = client.get(
             f"{v1_base_endpoint}/cwe-22?{urlencode(params)}",
         )
-        assert response.status_code == 404
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    # CWE-23 Relative Path Traversa
+    def test_cwe_23_v1(
+        self, client, v1_base_endpoint, profiles, profile_alpha_filename
+    ):
+        params = {"profile": profile_alpha_filename}
+
+        response = client.get(
+            f"{v1_base_endpoint}/cwe-23?{urlencode(params)}",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["profile"] == profiles.alpha
+
+        params = {"profile": "../../../../../../../../../../../etc/passwd"}
+
+        response = client.get(
+            f"{v1_base_endpoint}/cwe-23?{urlencode(params)}",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["profile"] == open("/etc/passwd").read()
+
+    def test_cwe_23_v2(self, client, v2_base_endpoint, profiles, profile_beta_filename):
+        params = {"profile": profile_beta_filename}
+
+        response = client.get(
+            f"{v2_base_endpoint}/cwe-23?{urlencode(params)}",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["profile"] == profiles.beta
+
+        params = {"profile": "../../../../../../../../../../../etc/passwd"}
+
+        response = client.get(
+            f"{v2_base_endpoint}/cwe-23?{urlencode(params)}",
+        )
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
     # CWE-285 Improper Authorization
     def test_cwe_285_invalid(self, client, v1_base_endpoint, v2_base_endpoint):
@@ -85,65 +122,65 @@ class TestBrokenAccessControl:
                 f"{base_endpoint}/cwe-285/items/2",
                 headers={"Authorization": "Bearer Jeremy"},
             )
-            assert response.status_code == 404
+            assert response.status_code == status.HTTP_404_NOT_FOUND
 
             response = client.get(
                 f"{base_endpoint}/cwe-285/items/0",
                 headers={"Authorization": "Bearer John"},
             )
-            assert response.status_code == 401
+            assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
             response = client.get(
                 f"{base_endpoint}/cwe-285/items/0",
             )
-            assert response.status_code == 401
+            assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_cwe_285_v1(self, client, v1_base_endpoint):
         response = client.get(
             f"{v1_base_endpoint}/cwe-285/items/0",
             headers={"Authorization": "Bearer Jeremy"},
         )
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
 
         response = client.get(
             f"{v1_base_endpoint}/cwe-285/items/0",
             headers={"Authorization": "Bearer Fatima"},
         )
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
 
         response = client.get(
             f"{v1_base_endpoint}/cwe-285/items/1",
             headers={"Authorization": "Bearer Jeremy"},
         )
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
 
         response = client.get(
             f"{v1_base_endpoint}/cwe-285/items/1",
             headers={"Authorization": "Bearer Fatima"},
         )
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
 
     def test_cwe_285_v2(self, client, v2_base_endpoint):
         response = client.get(
             f"{v2_base_endpoint}/cwe-285/items/0",
             headers={"Authorization": "Bearer Jeremy"},
         )
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
 
         response = client.get(
             f"{v2_base_endpoint}/cwe-285/items/0",
             headers={"Authorization": "Bearer Fatima"},
         )
-        assert response.status_code == 403
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
         response = client.get(
             f"{v2_base_endpoint}/cwe-285/items/1",
             headers={"Authorization": "Bearer Jeremy"},
         )
-        assert response.status_code == 403
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
         response = client.get(
             f"{v2_base_endpoint}/cwe-285/items/1",
             headers={"Authorization": "Bearer Fatima"},
         )
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
